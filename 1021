@@ -1,0 +1,129 @@
+#include <stdio.h>
+#include <stdlib.h>
+//从1开始计数,稀疏图 用邻接表存，dfs
+int Visit[10001];
+struct Node{
+	int Num;
+	struct Node* next;
+}G[10001]; 
+
+
+int point;
+int maxlevel=0;
+void DFS(int V);
+void Insert();
+int Level[10001];
+int DRoot[10001];
+int Count=0;
+int cmp(void* a,void* b){
+	return(*(int*)a-*(int*)b);
+}
+void find(int V,int level);
+int main()
+{
+	int N;
+	scanf("%d",&N);
+	int i;
+	for(i=1;i<=N;i++){
+		Visit[i]=0;
+		G[i].next=NULL;
+	}
+	for(i=1;i<N;i++){
+		Insert();
+	}
+	int cnt=0;
+	for(i=1;i<=N;i++)
+		if(!Visit[i]){
+			DFS(i);
+			cnt++;
+		}
+	if(cnt==1){
+		int collected[10001]={0};
+		for(i=1;i<=N;i++)
+			Visit[i]=0;
+		find(1,0);
+		int max;
+		for(i=1;i<=N;i++){
+			if(Level[i]==maxlevel){
+				max=i;
+				DRoot[Count++]=i;
+				collected[i]=1;
+			}	
+			Visit[i]=0;
+		}
+		maxlevel=0;
+		find(max,0);
+		for(i=1;i<=N;i++)
+			if(Level[i]==maxlevel&&!collected[i])
+				DRoot[Count++]=i;
+		qsort(DRoot,Count,sizeof(int),cmp);
+		for(i=0;i<Count;i++)
+		printf("%d\n",DRoot[i]);
+	}
+	else
+		printf("Error: %d components\n",cnt);
+	return 0;	
+} 
+
+void DFS(int V)
+{
+	Visit[V]=1;
+	struct Node* p=&G[V];
+	while(p->next){
+		if(!Visit[p->next->Num])
+			DFS(p->next->Num);
+		p=p->next;
+	}
+}
+
+
+
+
+void Insert()
+{
+	int V,W;
+	scanf("%d %d",&V,&W);
+	struct Node* P1,* P2;
+	P1=&G[V];
+	P2=(struct Node*)malloc(sizeof(struct Node));
+	P2->Num=W;
+	P2->next=NULL;
+	while(P1->next!=NULL){
+		P1=P1->next;
+	}
+	P1->next=P2;
+	struct Node* P3,* P4;
+	P3=&G[W];
+	P4=(struct Node*)malloc(sizeof(struct Node));
+	P4->Num=V;
+	P4->next=NULL;
+	while(P3->next!=NULL){
+		P3=P3->next;
+	}
+	P3->next=P4;
+}
+
+void find(int V,int level)
+{
+	Visit[V]=1;
+	Level[V]=level;
+	if(level>maxlevel)
+		maxlevel=level;
+	struct Node* P=&G[V];
+	while(P->next){
+		if(!Visit[P->next->Num])
+			find(P->next->Num,level+1);
+		P=P->next;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
