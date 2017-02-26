@@ -1,0 +1,106 @@
+  With highways available, driving a car from Hangzhou to any other city is easy. But since the tank capacity of a car is limited, we have to find gas stations on the way from time to time. Different gas station may give different price. You are asked to carefully design the cheapest route to go.
+Input Specification: 
+Each input file contains one test case. For each case, the first line contains 4 positive numbers: Cmax (<= 100), the maximum capacity of the tank; D (<=30000), the distance between Hangzhou and the destination city; Davg (<=20), the average distance per unit gas that the car can run; and N (<= 500), the total number of gas stations. Then N lines follow, each contains a pair of non-negative numbers: Pi, the unit gas price, and Di (<=D), the distance between this station and Hangzhou, for i=1,...N. All the numbers in a line are separated by a space.
+Output Specification: 
+For each test case, print the cheapest price in a line, accurate up to 2 decimal places. It is assumed that the tank is empty at the beginning. If it is impossible to reach the destination, print "The maximum travel distance = X" where X is the maximum possible distance the car can run, accurate up to 2 decimal places.
+
+利用贪心算法，把所有车站先进行一次排序，在判断
+  如果下一个车站是到不了的，那么跳出循环，否则选一个价格比当前车站近的节点，否则就直接下一个
+一个小提示，把终点的价格设为0
+
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+//从起点开始找下一个更加便宜的站，如果没有就加满，然后到下一个加油站，一个加油站一个加油站过去哦 
+//把价格的元/升 换成元/公里是最好的,最后一个加油站的dist定义为终点 
+struct station{
+	double price;//元/每公里 
+	int distance; 
+}S[501];
+
+int cmp(const void* a,const void *b)
+{
+	return(((struct station*)a)->distance-((struct station*)b)->distance);
+}
+
+int main()
+{
+	int cap,dist,way,stations;
+	scanf("%d %d %d %d",&cap,&dist,&way,&stations);
+	int maxdist=cap*way;
+	int available_dist=0;
+	double total_price=0;
+	int total_dist=0;
+	int i;
+	for(i=0;i<stations;i++){
+		double p;
+		int d;
+		scanf("%lf %d",&p,&d);
+		S[i].price=p/way;
+		S[i].distance=d;
+	}
+	S[i].distance=dist;
+	S[i].price=0;
+	stations++; 
+	qsort(S,stations,sizeof(struct station),cmp);
+	int flag=0;//flag==1表示正常退出 
+	int cnt=0;
+	while(flag==0){
+		int next,minp;
+		next=-1;
+		if(S[cnt+1].distance-S[cnt].distance>maxdist){
+			total_dist+=maxdist;
+			break;
+		}
+		for(i=cnt+1;i<stations;i++){
+			if(S[i].distance-S[cnt].distance>maxdist)
+				break;
+			if(S[i].price<S[cnt].price){
+				//遇见的第一个价格比较低的点 
+				next=i;
+				break;
+			}
+		}
+		if(next==-1){
+			//后面没有更加便宜的车站，那么加满油。往下开一个车站 
+			total_price+=((maxdist-available_dist)*S[cnt].price); 
+			total_dist=S[cnt+1].distance;
+			available_dist=maxdist+S[cnt].distance-S[cnt+1].distance;
+			cnt++;
+		}
+		else{
+			//否则的话加到下一个加油站的油即可
+			int D=S[next].distance-S[cnt].distance;
+			if(D>available_dist){
+				total_price+=((D-available_dist)*S[cnt].price);
+				available_dist=0;
+			}
+			else
+				available_dist-=D;
+			total_dist=S[next].distance;
+			cnt=next;
+		}
+		if(S[cnt].price==0)
+			flag=1;
+	}
+	if(flag)
+		printf("%.2lf\n",total_price);
+	else{
+		if(S[0].distance!=0)
+			total_dist=0;
+		printf("The maximum travel distance = %d.00",total_dist);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	return 0;
+}
